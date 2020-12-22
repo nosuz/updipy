@@ -3,6 +3,10 @@
 ```sh
 cd updipy_project_dir # setup.py is here.
 pip3 install --user .
+
+# or install from Github repo.
+
+pip3 install --user git+https://github.com/nosuz/updipy/tree/main/updipy
 ```
 
 ## Uninstall
