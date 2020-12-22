@@ -5,9 +5,9 @@ import logging
 import shutil
 import argparse
 
-from updi import UPDI
-from device import Device
-from ihex import IHex  # ignore pylance warning
+from .updi import UPDI
+from .device import Device
+from .ihex import IHex
 
 
 class UPDI_FUNC:

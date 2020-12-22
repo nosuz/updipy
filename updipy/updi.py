@@ -2,7 +2,7 @@ import serial
 import logging
 import time
 
-from device import Device
+from .device import Device
 
 
 class LinkTimeoutError(Exception):
