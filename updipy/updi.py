@@ -1,6 +1,7 @@
 import serial
 import logging
 import time
+import sys
 
 from .device import Device
 
@@ -59,12 +60,20 @@ class UPDI:
         if self.link:
             self.link.close()
 
-        self.link = serial.Serial(port=self.port, baudrate=self.speed,
-                                  bytesize=serial.EIGHTBITS,
-                                  parity=serial.PARITY_EVEN,
-                                  stopbits=serial.STOPBITS_TWO,
-                                  timeout=0.2
-                                  )
+        try:
+            self.link = serial.Serial(port=self.port, baudrate=self.speed,
+                                      bytesize=serial.EIGHTBITS,
+                                      parity=serial.PARITY_EVEN,
+                                      stopbits=serial.STOPBITS_TWO,
+                                      timeout=0.2
+                                      )
+        except AttributeError as e:
+            print("Error: You might installed a wrong package named serial.")
+            print(
+                "Uninstall both pyserial and serial packages, then install pyserial again.")
+            logging.error(
+                "AttributeError: May be installed package named serial.")
+            sys.exit()
 
     def close_link(self):
         if self.link:
