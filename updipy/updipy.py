@@ -122,8 +122,43 @@ class UPDI_FUNC:
 
         self.reset()
 
-    def read_flash(self, addr):
-        pass
+    def read_flash(self, addr=0x0000, size=None):
+        self.unlock_nvm()
+
+        logging.debug(f"addr: {addr:4X}, size: {size}")
+        nvm_size = self.device.FLASH_PAGE_SIZE * self.device.FLASH_PAGE_COUNT
+        if not size:
+            size = nvm_size - addr
+        if not(0 < size <= nvm_size):
+            raise Exception(f"Read range size Error: {size}")
+
+        last_addr = addr + size - 1
+        if last_addr >= nvm_size:
+            raise Exception("Over NVM size Error")
+
+        ph_addr = addr + self.device.FLASH_START_ADDR
+        logging.info(f"Read from: {addr:04X}, {ph_addr:04X}")
+        self.updi.st(UPDI.SET_PTR, ph_addr)
+
+        pages = int(size / self.device.FLASH_PAGE_SIZE)
+        remain_size = size % self.device.FLASH_PAGE_SIZE
+        logging.info(f"Read size: {pages:2X} pages + {remain_size:2X} bytes")
+
+        memory = []
+        repeat_size = self.device.FLASH_PAGE_SIZE - 1
+        logging.debug(f"repeat cout: {repeat_size}")
+        for page in range(pages):
+            self.updi.repeat(repeat_size)
+            memory += self.updi.ld(UPDI.AT_PTR_INC)
+            memory += self.updi.repeat_read(repeat_size)
+        if remain_size > 0:
+            repeat_size = remain_size - 1
+            logging.debug(f"repeat cout: {repeat_size}")
+            self.updi.repeat(repeat_size)
+            memory += self.updi.ld(UPDI.AT_PTR_INC)
+            memory += self.updi.repeat_read(repeat_size)
+
+        return memory
 
     def write_flash(self, memory):
         self.chip_erase()
