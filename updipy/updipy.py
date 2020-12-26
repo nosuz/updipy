@@ -35,7 +35,7 @@ class UPDI_FUNC:
         status = self.updi.ldcs(self.device.ASI_SYS_STATUS)
         if (status[0] & self.device.ASI_SYS_STATUS_NVMPROG_mask) != 0:
             logging.debug("Not Locked")
-            return
+            return True
 
         self.updi.set_key(UPDI.NVMPROG_KEY)
         self.updi.req_reset()
@@ -51,6 +51,7 @@ class UPDI_FUNC:
                 time.sleep(0.2)
                 count += 1
         logging.info("Unlocked NVM")
+        return True
 
     def reset(self):
         self.updi.req_reset()

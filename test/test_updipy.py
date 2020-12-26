@@ -25,6 +25,8 @@ class UpdipyTest(unittest.TestCase):
         self.assertEqual("NVMUs&te", "".join(
             [chr(c) for c in UPDI.USERROW_WRITE_KEY]))
 
+    def test_unlock_nvm(self):
+        self.assertEqual(True, self.updi.unlock_nvm())
     def test_device_name(self):
         self.assertEqual(UpdipyTest.DEVICE_NAME, self.updi.get_device_name())
 
