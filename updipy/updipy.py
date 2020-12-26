@@ -134,7 +134,7 @@ class UPDI_FUNC:
 
         last_addr = addr + size - 1
         if last_addr >= nvm_size:
-            raise Exception("Over NVM size Error")
+            raise Exception("Over flash size Error")
 
         ph_addr = addr + self.device.FLASH_START_ADDR
         logging.info(f"Read from: {addr:04X}, {ph_addr:04X}")
