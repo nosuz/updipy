@@ -2,6 +2,7 @@ import os
 import unittest
 import sys
 import os.path as path
+import random
 
 
 class UpdipyTest(unittest.TestCase):
@@ -57,6 +58,15 @@ class UpdipyTest(unittest.TestCase):
         nvm_size = self.updi.device.FLASH_PAGE_SIZE * self.updi.device.FLASH_PAGE_COUNT
         memory = self.updi.read_flash()
         self.assertEqual(nvm_size, memory.count(0xFF))
+
+    def test_write_flash(self):
+        flash_size = self.updi.device.FLASH_PAGE_SIZE * self.updi.device.FLASH_PAGE_COUNT
+        memory = [random.randint(0, 0xff) for _ in range(flash_size)]
+        self.updi.write_flash(memory)
+
+        read = self.updi.read_flash()
+
+        self.assertEqual(memory, read)
 
 
 if __name__ == '__main__':
