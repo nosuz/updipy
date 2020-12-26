@@ -51,6 +51,13 @@ class UpdipyTest(unittest.TestCase):
     def test_device_name(self):
         self.assertEqual(UpdipyTest.DEVICE_NAME, self.updi.get_device_name())
 
+    def test_chip_erase(self):
+        self.updi.chip_erase()
+
+        nvm_size = self.updi.device.FLASH_PAGE_SIZE * self.updi.device.FLASH_PAGE_COUNT
+        memory = self.updi.read_flash()
+        self.assertEqual(nvm_size, memory.count(0xFF))
+
 
 if __name__ == '__main__':
     sys.path.append(path.dirname(__file__) + "/..")
