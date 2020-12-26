@@ -141,7 +141,7 @@ class UPDI_FUNC:
                 continue
             else:
                 progress = (page + 1) / self.device.FLASH_PAGE_COUNT
-                print(f"{int(progress * 100):>3}%", "[" + "#" * int(col_size * progress) + " " * (
+                print(f"{int(progress * 100):>3}%", "[" + "#" * int(col_size * progress) + "." * (
                     col_size - int(col_size * progress)) + "]", end="\r")
                 data = [0xFF if d is None else d for d in raw_data]
             logging.info(f"Write address: {prog_addr:04X}, {ph_addr:04X}")
