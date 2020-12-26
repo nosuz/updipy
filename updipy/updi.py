@@ -87,6 +87,9 @@ class UPDI:
         logging.debug("TxD:" + ", ".join(["{:02X}".format(c) for c in _echo]))
 
     def read_link(self, size):
+        if size == 0:
+            return []
+
         _read = self.link.read(size)
         if not _read:
             logging.error("Link read Timeout")
@@ -204,8 +207,9 @@ class UPDI:
         self.read_link(1)
 
     def repeat(self, data_size):
-        cmd = [UPDI.REPEAT | UPDI.DATA_SIZE_1, data_size & 0xFF]
-        self.write_link(cmd)
+        if data_size > 0:
+            cmd = [UPDI.REPEAT | UPDI.DATA_SIZE_1, data_size & 0xFF]
+            self.write_link(cmd)
 
     def repeat_write(self, data):
         for d in data:
