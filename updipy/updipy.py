@@ -209,6 +209,51 @@ class UPDI_FUNC:
         logging.info(f"Device name: {dev_name}")
         return dev_name
 
+    def read_eeprom(self, addr=0x0000, size=None):
+        return self.read_nvm(
+            self.device.EEPROM_PAGE_SIZE,
+            self.device.EEPROM_PAGE_COUNT,
+            self.device.EEPROM_START_ADDR,
+            addr, size)
+
+    def read_nvm(self, page_size, page_count, page_start, addr=0x0000, size=None):
+        self.unlock_nvm()
+
+        nvm_size = page_size * page_count
+        if not size:
+            size = nvm_size - addr
+        if not(0 < size <= nvm_size):
+            raise Exception(f"Read size Error: {size}")
+
+        last_addr = addr + size - 1
+        if last_addr >= nvm_size:
+            raise Exception(f"Over segment Error: {last_addr}")
+
+        ph_addr = addr + page_start
+        logging.info(f"Read from {addr:04X} ({ph_addr:04X})")
+        self.updi.st(UPDI.SET_PTR, ph_addr)
+
+        pages = int(size / page_size)
+        remain_size = size % page_size
+        logging.info(
+            f"Read size: {size:04X} bytes ({pages:2X} pages + {remain_size:2X} bytes)")
+
+        memory = []
+        repeat_size = page_size - 1
+        logging.debug(f"repeat cout: {repeat_size}")
+        for page in range(pages):
+            self.updi.repeat(repeat_size)
+            memory += self.updi.ld(UPDI.AT_PTR_INC)
+            memory += self.updi.repeat_read(repeat_size)
+        if remain_size > 0:
+            repeat_size = remain_size - 1
+            logging.debug(f"repeat cout: {repeat_size}")
+            self.updi.repeat(repeat_size)
+            memory += self.updi.ld(UPDI.AT_PTR_INC)
+            memory += self.updi.repeat_read(repeat_size)
+
+        return memory
+
 
 def main():
     parser = argparse.ArgumentParser()

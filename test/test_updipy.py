@@ -67,6 +67,28 @@ class UpdipyTest(unittest.TestCase):
         read = self.updi.read_flash()
         self.assertEqual(memory, read)
 
+    def test_read_all_eeprom(self):
+        memory = self.updi.read_eeprom()
+        self.assertEqual(self.updi.device.EEPROM_PAGE_SIZE *
+                         self.updi.device.EEPROM_PAGE_COUNT, len(memory))
+
+    def test_read_last_eeprom(self):
+        flash_size = self.updi.device.EEPROM_PAGE_SIZE * \
+            self.updi.device.EEPROM_PAGE_COUNT
+        memory = self.updi.read_eeprom(addr=(flash_size - 1))
+        self.assertEqual(1, len(memory))
+
+    def test_read_eeprom_size(self):
+        memory = self.updi.read_eeprom(
+            size=self.updi.device.EEPROM_PAGE_SIZE + 1)
+        self.assertEqual(self.updi.device.EEPROM_PAGE_SIZE + 1, len(memory))
+
+    def test_read_over_eeprom(self):
+        flash_size = self.updi.device.EEPROM_PAGE_SIZE * \
+            self.updi.device.EEPROM_PAGE_COUNT
+        with self.assertRaisesRegex(Exception, r"^Over segment Error:"):
+            self.updi.read_eeprom(addr=flash_size - 1, size=2)
+
 
 if __name__ == '__main__':
     sys.path.append(path.dirname(__file__) + "/..")
