@@ -65,7 +65,6 @@ class UpdipyTest(unittest.TestCase):
         self.updi.write_flash(memory)
 
         read = self.updi.read_flash()
-
         self.assertEqual(memory, read)
 
 
