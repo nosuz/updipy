@@ -46,7 +46,7 @@ class UpdipyTest(unittest.TestCase):
 
     def test_read_over_flash(self):
         flash_size = self.updi.device.FLASH_PAGE_SIZE * self.updi.device.FLASH_PAGE_COUNT
-        with self.assertRaisesRegex(Exception, r"^Over flash size Error$"):
+        with self.assertRaisesRegex(Exception, r"^Over segment Error:"):
             self.updi.read_flash(addr=flash_size - 1, size=2)
 
     def test_device_name(self):
