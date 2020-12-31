@@ -254,6 +254,8 @@ def main():
                         help="Dump EEPROM memory", action='store_true')
     parser.add_argument("-df", "--dump-flash",
                         help="Dump FLASH memory", action='store_true')
+    parser.add_argument("-v", "--verify",
+                        help="Verify FLASH and EEPROM memory", action='store_true')
 
     args = parser.parse_args()
 
@@ -272,12 +274,33 @@ def main():
         hex.read_file(args.hex)
 
         if hex.has_addr(0x0):
+            print("Programing Flash memory ...")
             bin = hex.get_memory(0x0)
             updi.write_flash(bin)
+            if args.verify:
+                read_size = 0x10000 - bin.count(None)
+                read = updi.read_flash(size=read_size)
+                if bin[:read_size] == read:
+                    print("Flash memory OK.")
+                else:
+                    logging.error("Writing Flash memory Error")
+                    raise Exception("Writing Flash memory Error")
 
         if hex.has_addr(0x81):
+            print("Writing EEPROM memory ...")
             bin = hex.get_memory(0x81)
             updi.write_eeprom(bin)
+            if args.verify:
+                read_size = 0x10000 - bin.count(None)
+                read = updi.read_eeprom(size=read_size)
+                if bin[:read_size] == read:
+                    print("EEPROM memory OK.")
+                else:
+                    print(bin[:read_size])
+                    print(read)
+                    logging.error("Writing EEPROM memory Error")
+                    raise Exception("Writing EEPROM memory Error")
+
         if hex.has_addr(0x82):
             bin = hex.get_memory(0x82)
             updi.write_fuses(bin)
