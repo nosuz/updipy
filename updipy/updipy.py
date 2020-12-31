@@ -271,8 +271,9 @@ def main():
         hex = IHex()
         hex.read_file(args.hex)
 
-        bin = hex.get_memory(0x0)
-        updi.write_flash(bin)
+        if hex.has_addr(0x0):
+            bin = hex.get_memory(0x0)
+            updi.write_flash(bin)
 
         if hex.has_addr(0x81):
             bin = hex.get_memory(0x81)
