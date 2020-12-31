@@ -256,10 +256,10 @@ def main():
     parser.add_argument("-i", "--hex", help="hex file")
     parser.add_argument("-v", "--verify",
                         help="Verify FLASH and EEPROM memory", action='store_true')
-    parser.add_argument("-de", "--dump-eeprom",
-                        help="Dump EEPROM memory", action='store_true')
-    parser.add_argument("-df", "--dump-flash",
-                        help="Dump FLASH memory", action='store_true')
+    parser.add_argument("-de", "--dump-eeprom", help="Dump EEPROM memory",
+                        nargs='?', type=int, const=-1, default=0)
+    parser.add_argument("-df", "--dump-flash", help="Dump FLASH memory",
+                        nargs='?', type=int, const=-1, default=0)
     parser.add_argument("--debug", help="Set debug mode", action='store_true')
 
     args = parser.parse_args()
@@ -327,9 +327,14 @@ def main():
                 f"{fuse_name:<{max_len}}({addr:02X}): {fuse >> 4:04b} {fuse & 0x0F:04b} ({fuse:02X})")
 
     if args.dump_eeprom:
-        print("Reading EEPROM memory")
-        memory = updi.read_eeprom()
-        for page in range(updi.device.EEPROM_PAGE_COUNT):
+        if 0 < args.dump_eeprom <= updi.device.EEPROM_PAGE_COUNT:
+            page_count = args.dump_eeprom
+        else:
+            page_count = updi.device.EEPROM_PAGE_COUNT
+        read_size = page_count * updi.device.EEPROM_PAGE_SIZE
+        print(f"Reading {read_size} bytes of EEPROM memory")
+        memory = updi.read_eeprom(size=read_size)
+        for page in range(page_count):
             print(" " * 5, " ".join([f"{x:2X}" for x in range(16)]))
             for p in range(0, updi.device.EEPROM_PAGE_SIZE, 0x10):
                 block_start = page * updi.device.EEPROM_PAGE_SIZE + p
@@ -338,9 +343,14 @@ def main():
                     [f"{x:02X}" for x in block]))
 
     if args.dump_flash:
-        print("Reading FLASH memory")
-        memory = updi.read_flash()
-        for page in range(updi.device.FLASH_PAGE_COUNT):
+        if 0 < args.dump_flash <= updi.device.FLASH_PAGE_COUNT:
+            page_count = args.dump_flash
+        else:
+            page_count = updi.device.FLASH_PAGE_COUNT
+        read_size = page_count * updi.device.FLASH_PAGE_SIZE
+        print(f"Reading {read_size} bytes of FLASH memory")
+        memory = updi.read_flash(size=read_size)
+        for page in range(page_count):
             print(" " * 5, " ".join([f"{x:2X}" for x in range(16)]))
             for p in range(0, updi.device.FLASH_PAGE_SIZE, 0x10):
                 block_start = page * updi.device.FLASH_PAGE_SIZE + p
