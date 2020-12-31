@@ -330,23 +330,23 @@ def main():
         print("Reading EEPROM memory")
         memory = updi.read_eeprom()
         for page in range(updi.device.EEPROM_PAGE_COUNT):
+            print(" " * 5, " ".join([f"{x:2X}" for x in range(16)]))
             for p in range(0, updi.device.EEPROM_PAGE_SIZE, 0x10):
                 block_start = page * updi.device.EEPROM_PAGE_SIZE + p
                 block = memory[block_start:block_start + 0x10]
                 print(f"{block_start:04X}:", " ".join(
                     [f"{x:02X}" for x in block]))
-            print("")
 
     if args.dump_flash:
         print("Reading FLASH memory")
         memory = updi.read_flash()
         for page in range(updi.device.FLASH_PAGE_COUNT):
+            print(" " * 5, " ".join([f"{x:2X}" for x in range(16)]))
             for p in range(0, updi.device.FLASH_PAGE_SIZE, 0x10):
                 block_start = page * updi.device.FLASH_PAGE_SIZE + p
                 block = memory[block_start:block_start + 0x10]
                 print(f"{block_start:04X}:", " ".join(
                     [f"{x:02X}" for x in block]))
-            print("")
 
     if args.chip_erase:
         updi.chip_erase(force=True)
