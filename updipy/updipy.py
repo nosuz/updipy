@@ -53,6 +53,19 @@ class UPDI_FUNC:
         logging.info("Unlocked NVM")
         return True
 
+    def get_device_name(self):
+        self.unlock_nvm()
+
+        self.updi.st(UPDI.SET_PTR, Device.SIGROW_base)
+        self.updi.repeat(0x02)
+        dev_id = self.updi.ld(UPDI.AT_PTR_INC)
+        dev_id += self.updi.repeat_read(0x02)
+        sig = "".join([f"{sig:02X}" for sig in dev_id])
+        logging.info(f"Device ID: {sig}")
+        dev_name = Device.NAME_BY_SIG[sig]
+        logging.info(f"Device name: {dev_name}")
+        return dev_name
+
     def reset(self):
         self.updi.req_reset()
 
@@ -121,19 +134,6 @@ class UPDI_FUNC:
                           self.device.NVMCTRL_CTRLA_CMD_WFU)
 
         self.reset()
-
-    def get_device_name(self):
-        self.unlock_nvm()
-
-        self.updi.st(UPDI.SET_PTR, Device.SIGROW_base)
-        self.updi.repeat(0x02)
-        dev_id = self.updi.ld(UPDI.AT_PTR_INC)
-        dev_id += self.updi.repeat_read(0x02)
-        sig = "".join([f"{sig:02X}" for sig in dev_id])
-        logging.info(f"Device ID: {sig}")
-        dev_name = Device.NAME_BY_SIG[sig]
-        logging.info(f"Device name: {dev_name}")
-        return dev_name
 
     def read_eeprom(self, addr=0x0000, size=None):
         return self.read_nvm(
