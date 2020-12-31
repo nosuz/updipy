@@ -12,6 +12,7 @@ from .ihex import IHex
 
 class UPDI_FUNC:
     def __init__(self, port, speed=115200, device_name=None):
+        self.chip_erased = False
         self.device = Device.select(device_name)
         self.updi = UPDI(port=port, speed=speed, device=self.device)
         if device_name:
@@ -69,7 +70,10 @@ class UPDI_FUNC:
     def reset(self):
         self.updi.req_reset()
 
-    def chip_erase(self):
+    def chip_erase(self, force=False):
+        if (not force) and self.chip_erased:
+            return
+
         self.updi.set_key(UPDI.CHIP_ERASE_KEY)
         self.updi.req_reset()
         count = 0
@@ -83,6 +87,7 @@ class UPDI_FUNC:
             else:
                 count += 1
                 time.sleep(0.2)
+        self.chip_erased = True
 
     def read_fuses(self):
         self.unlock_nvm()
@@ -267,7 +272,7 @@ def main():
     updi = UPDI_FUNC(args.line, device_name=args.device)
 
     if args.chip_erase:
-        updi.chip_erase()
+        updi.chip_erase(force=True)
 
     if args.hex:
         hex = IHex()
