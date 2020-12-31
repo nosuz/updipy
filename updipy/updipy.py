@@ -245,22 +245,22 @@ class UPDI_FUNC:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--debug", help="Set debug mode", action='store_true')
-    parser.add_argument("-d", "--device", help="Device name")
     parser.add_argument("-l", "--line", help="port path", required=True)
-    parser.add_argument("-i", "--hex", help="hex file")
+    parser.add_argument("-d", "--device", help="Device name")
     parser.add_argument("-rf", "--read-fuse",
                         help="read fuse", action='store_true')
     parser.add_argument(
         "-wf", "--write-fuse", help="write fuse ADDR:VAL ...", action="extend", nargs="+", type=str)
     parser.add_argument("-ce", "--chip-erase",
                         help="Chip erase", action='store_true')
+    parser.add_argument("-i", "--hex", help="hex file")
+    parser.add_argument("-v", "--verify",
+                        help="Verify FLASH and EEPROM memory", action='store_true')
     parser.add_argument("-de", "--dump-eeprom",
                         help="Dump EEPROM memory", action='store_true')
     parser.add_argument("-df", "--dump-flash",
                         help="Dump FLASH memory", action='store_true')
-    parser.add_argument("-v", "--verify",
-                        help="Verify FLASH and EEPROM memory", action='store_true')
+    parser.add_argument("--debug", help="Set debug mode", action='store_true')
 
     args = parser.parse_args()
 
