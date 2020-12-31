@@ -250,6 +250,10 @@ def main():
         "-wf", "--write-fuse", help="write fuse ADDR:VAL ...", action="extend", nargs="+", type=str)
     parser.add_argument("-ce", "--chip-erase",
                         help="Chip erase", action='store_true')
+    parser.add_argument("-de", "--dump-eeprom",
+                        help="Dump EEPROM memory", action='store_true')
+    parser.add_argument("-df", "--dump-flash",
+                        help="Dump FLASH memory", action='store_true')
 
     args = parser.parse_args()
 
@@ -295,6 +299,28 @@ def main():
             fuse_name = updi.device.FUSE_BY_ADDR[addr]
             print(
                 f"{fuse_name:<{max_len}}({addr:02X}): {fuse >> 4:04b} {fuse & 0x0F:04b} ({fuse:02X})")
+
+    if args.dump_eeprom:
+        print("Reading EEPROM memory")
+        memory = updi.read_eeprom()
+        for page in range(updi.device.EEPROM_PAGE_COUNT):
+            for p in range(0, updi.device.EEPROM_PAGE_SIZE, 0x10):
+                block_start = page * updi.device.EEPROM_PAGE_SIZE + p
+                block = memory[block_start:block_start + 0x10]
+                print(f"{block_start:04X}:", " ".join(
+                    [f"{x:02X}" for x in block]))
+            print("")
+
+    if args.dump_flash:
+        print("Reading FLASH memory")
+        memory = updi.read_flash()
+        for page in range(updi.device.FLASH_PAGE_COUNT):
+            for p in range(0, updi.device.FLASH_PAGE_SIZE, 0x10):
+                block_start = page * updi.device.FLASH_PAGE_SIZE + p
+                block = memory[block_start:block_start + 0x10]
+                print(f"{block_start:04X}:", " ".join(
+                    [f"{x:02X}" for x in block]))
+            print("")
 
     updi.close()
 
