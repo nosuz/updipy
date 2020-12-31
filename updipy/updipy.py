@@ -271,9 +271,6 @@ def main():
 
     updi = UPDI_FUNC(args.line, device_name=args.device)
 
-    if args.chip_erase:
-        updi.chip_erase(force=True)
-
     if args.hex:
         hex = IHex()
         hex.read_file(args.hex)
@@ -350,6 +347,9 @@ def main():
                 print(f"{block_start:04X}:", " ".join(
                     [f"{x:02X}" for x in block]))
             print("")
+
+    if args.chip_erase:
+        updi.chip_erase(force=True)
 
     updi.close()
 
