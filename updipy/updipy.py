@@ -216,6 +216,13 @@ class UPDI_FUNC:
             self.device.EEPROM_START_ADDR,
             addr, size)
 
+    def write_eeprom(self, memory):
+        self.write_nvm(
+            self.device.EEPROM_PAGE_SIZE,
+            self.device.EEPROM_PAGE_COUNT,
+            self.device.EEPROM_START_ADDR,
+            memory)
+
     def read_nvm(self, page_size, page_count, page_start, addr=0x0000, size=None):
         self.unlock_nvm()
 
@@ -254,6 +261,42 @@ class UPDI_FUNC:
 
         return memory
 
+    def write_nvm(self, page_size, page_count, page_start, memory):
+        self.chip_erase()
+
+        self.unlock_nvm()
+
+        col_size = shutil.get_terminal_size().columns
+        col_size = col_size - col_size % page_count - 10
+        for page in range(page_count):
+            prog_addr = page * page_size
+            ph_addr = page_start + prog_addr
+            raw_data = memory[prog_addr:prog_addr +
+                              page_size]
+            if raw_data.count(None) == page_size:
+                # break
+                continue
+            else:
+                progress = (page + 1) / page_count
+                print(f"{int(progress * 100):>3}%", "[" + "#" * int(col_size * progress) + "." * (
+                    col_size - int(col_size * progress)) + "]", end="\r")
+                data = [0xFF if d is None else d for d in raw_data]
+            logging.info(f"Write address: {prog_addr:04X}, {ph_addr:04X}")
+            logging.debug(", ".join([f"{d:02X}" for d in data]))
+            self.updi.st(UPDI.SET_PTR, ph_addr)
+            self.updi.repeat(page_size - 1)
+            self.updi.st(UPDI.AT_PTR_INC, data[0])
+            self.updi.repeat_write(data[1:])
+
+            self.updi.sts(self.device.NVMCTRL_ADDRL, ph_addr & 0xFF)
+            self.updi.sts(self.device.NVMCTRL_ADDRH, ph_addr >> 8)
+            #self.updi.sts(self.device.NVMCTRL_CTRLA, self.device.NVMCTRL_CTRLA_CMD_ERWP)
+            self.updi.sts(self.device.NVMCTRL_CTRLA,
+                          self.device.NVMCTRL_CTRLA_CMD_WP)
+
+        print("100%", "[" + "#" * col_size + "]")
+        self.reset()
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -289,7 +332,7 @@ def main():
 
         if hex.has_addr(0x81):
             bin = hex.get_memory(0x81)
-            # updi.write_eeprom(bin)
+            updi.write_eeprom(bin)
         if hex.has_addr(0x82):
             bin = hex.get_memory(0x82)
             updi.write_fuses(bin)
